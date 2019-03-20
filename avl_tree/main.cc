@@ -53,7 +53,7 @@ void compare_stl_bst()
     srand(time(nullptr));
     vector<int> input;
     const int MAX_NODE = 1000000;
-    for (int i = 0; i<MAX_NODE; i++) input.push_back(rand());
+    for (int i = 0; i<MAX_NODE; i++) input.push_back(rand()%MAX_NODE);
     auto tree = avltree<int, int>();
     auto cur = currentMSTime();
     for(auto a: input)
@@ -70,6 +70,18 @@ void compare_stl_bst()
     cout << "stl rb tree cost : " << currentMSTime() - cur << endl;
     cout << "rbtree.size() " << b.size() << endl;
     cout << "tree.size() " << tree.size() << endl; 
+
+    for(int i = 0; i<1000; i++)
+    {
+        auto it = input.begin();
+        advance(it, rand()%input.size());
+        tree.remove(*it);
+        b.erase(*it);
+    }
+    cout << "rbtree.size() " << b.size() << endl;
+    cout << "tree.size() " << tree.size() << endl; 
+  
+
 
 }
 

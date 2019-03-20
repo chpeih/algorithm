@@ -3,16 +3,7 @@
 
 #define AVLTREE_NODE avltree_node<KEY_TYPE, VALUE_TYPE>
 #define AVLTREE_NODE_PTR avltree_node<KEY_TYPE, VALUE_TYPE>*
-
-static int max(int a, int b)
-{
-    return a<b?b:a;
-}
-
-static int myabs(int a)
-{
-    return a>0?a:-a;
-}
+#include "util.h"
 
 template<class KEY_TYPE, class VALUE_TYPE>
 class avltree_node {
@@ -47,6 +38,8 @@ private:
     AVLTREE_NODE_PTR rotateRL(AVLTREE_NODE_PTR cur_ptr);
     AVLTREE_NODE_PTR rotateLR(AVLTREE_NODE_PTR cur_ptr);
     AVLTREE_NODE_PTR remove(AVLTREE_NODE_PTR cur_ptr, const KEY_TYPE &key);
+    AVLTREE_NODE_PTR find_min(AVLTREE_NODE_PTR cur_ptr);
+    AVLTREE_NODE_PTR find_max(AVLTREE_NODE_PTR cur_ptr);
 
     AVLTREE_NODE_PTR root_ptr;
     int node_size;
@@ -203,9 +196,61 @@ void avltree<KEY_TYPE, VALUE_TYPE>::remove(const KEY_TYPE& key)
 }
 
 template<class KEY_TYPE, class VALUE_TYPE>
+AVLTREE_NODE_PTR avltree<KEY_TYPE, VALUE_TYPE>::find_min(AVLTREE_NODE_PTR cur_ptr)
+{
+    if (cur_ptr == nullptr || cur_ptr->left_ptr == nullptr) return cur_ptr;
+    return find_min(cur_ptr->left_ptr);
+}
+
+template<class KEY_TYPE, class VALUE_TYPE>
+AVLTREE_NODE_PTR avltree<KEY_TYPE, VALUE_TYPE>::find_max(AVLTREE_NODE_PTR cur_ptr)
+{
+    if (cur_ptr == nullptr || cur_ptr->right_ptr == nullptr) return cur_ptr;
+    return find_max(cur_ptr->right_ptr);
+}
+
+template<class KEY_TYPE, class VALUE_TYPE>
 AVLTREE_NODE_PTR avltree<KEY_TYPE, VALUE_TYPE>::remove(AVLTREE_NODE_PTR cur_ptr, const KEY_TYPE &key)
 {
-    return nullptr;
+    AVLTREE_NODE_PTR temp = nullptr;
+    if (cur_ptr == nullptr)
+        return nullptr;
+    else if (key < cur_ptr->key)
+        cur_ptr->left_ptr = remove(cur_ptr->left_ptr, key);
+    else if (key > cur_ptr->key)
+        cur_ptr->right_ptr = remove(cur_ptr->right_ptr, key);
+    else if (cur_ptr->left_ptr && cur_ptr->right_ptr)
+    {
+        temp = find_min(cur_ptr->right_ptr);
+        cur_ptr->key = temp->key;
+        cur_ptr->value = temp->value;
+        cur_ptr->right_ptr = remove(cur_ptr->right_ptr, cur_ptr->key);
+    } else {
+        temp = cur_ptr;
+        if (cur_ptr->left_ptr == nullptr)
+          cur_ptr = cur_ptr->right_ptr;
+        else if (cur_ptr->right_ptr == nullptr)
+          cur_ptr = cur_ptr->left_ptr;
+        delete temp;
+    }
+
+    if (cur_ptr == nullptr) return cur_ptr;
+
+    auto left_height = height(cur_ptr->left_ptr), right_height = height(cur_ptr->right_ptr);
+    cur_ptr->height = max(left_height, right_height) + 1;
+
+    if (left_height - right_height == 2) {
+        if (height(cur_ptr->left_ptr->left_ptr) - height(cur_ptr->left_ptr->right_ptr) == 1)
+            return rotateR(cur_ptr);
+        else
+            return rotateLR(cur_ptr);
+    } else if (right_height - left_height == 2) {
+        if (height(cur_ptr->right_ptr->right_ptr) - height(cur_ptr->right_ptr->left_ptr) == 1)
+          return rotateL(cur_ptr);
+        else
+          return rotateRL(cur_ptr);
+    }
+    return cur_ptr;
 }
 
 template<class KEY_TYPE, class VALUE_TYPE>
@@ -227,27 +272,5 @@ bool check_avltree_balance(AVLTREE_NODE_PTR root_ptr)
     if (root_ptr == nullptr) return true;
     return check_avltree_balance(root_ptr->left_ptr) && check_avltree_balance(root_ptr->right_ptr) && myabs(height(root_ptr->left_ptr) - height(root_ptr->right_ptr)) <= 1;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #endif
