@@ -43,6 +43,7 @@ void random_set()
         }
 //        cout << "insert k " << k <<  " isBanlance: " << check_avltree_balance(tree) << endl;
     }
+    cout << "tree.size() " << tree.size() << endl; 
 }
 
 
@@ -51,7 +52,7 @@ void compare_stl_bst()
 {
     srand(time(nullptr));
     vector<int> input;
-    const int MAX_NODE = 10000000;
+    const int MAX_NODE = 1000000;
     for (int i = 0; i<MAX_NODE; i++) input.push_back(rand());
     auto tree = avltree<int, int>();
     auto cur = currentMSTime();
@@ -67,15 +68,16 @@ void compare_stl_bst()
         b.insert(make_pair(a, a));
     }
     cout << "stl rb tree cost : " << currentMSTime() - cur << endl;
-    
+    cout << "rbtree.size() " << b.size() << endl;
+    cout << "tree.size() " << tree.size() << endl; 
 
 }
 
 
 int main()
 {
-//    test_set();
-//    random_set();
+    test_set();
+    random_set();
     compare_stl_bst();
     return 0;
 }

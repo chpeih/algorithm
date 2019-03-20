@@ -1,136 +1,151 @@
 #ifndef __AVLTREE_H__
 #define __AVLTREE_H__
-#include "avltree_node.h"
+
+#define AVLTREE_NODE avltree_node<KEY_TYPE, VALUE_TYPE>
+#define AVLTREE_NODE_PTR avltree_node<KEY_TYPE, VALUE_TYPE>*
+
+static int max(int a, int b)
+{
+    return a<b?b:a;
+}
+
+static int myabs(int a)
+{
+    return a>0?a:-a;
+}
+
+template<class KEY_TYPE, class VALUE_TYPE>
+class avltree_node {
+public:
+    KEY_TYPE key;
+    VALUE_TYPE value;
+    int height;
+    AVLTREE_NODE_PTR left_ptr;
+    AVLTREE_NODE_PTR right_ptr;
+    avltree_node(const KEY_TYPE &_key = KEY_TYPE(), const VALUE_TYPE &_value = VALUE_TYPE()): key(_key), value(_value), height(0), left_ptr(nullptr), right_ptr(nullptr) {} 
+};
 
 template<class KEY_TYPE, class VALUE_TYPE>
 class avltree {
 public:
-    avltree() : root(nullptr) {}
+    avltree() : root_ptr(nullptr), node_size(0) {}
     ~avltree();
-    bool insert(const KEY_TYPE &key, const VALUE_TYPE &value);
-    avltree_node<KEY_TYPE, VALUE_TYPE>* get_root() { return root; }
-    void destroy(avltree_node<KEY_TYPE, VALUE_TYPE>*);
+    void insert(const KEY_TYPE &key, const VALUE_TYPE &value);
+    AVLTREE_NODE_PTR get_root() { return root_ptr; }
+    void clear();
+    int get_height();
+    int size() { return node_size; };
+    void remove(const KEY_TYPE &key);
 
 private:
-    void rotateL(avltree_node<KEY_TYPE, VALUE_TYPE>* parent);
-    void rotateR(avltree_node<KEY_TYPE, VALUE_TYPE>* parent);
-    void rotateRL(avltree_node<KEY_TYPE, VALUE_TYPE>* parent);
-    void rotateLR(avltree_node<KEY_TYPE, VALUE_TYPE>* parent);
+    void clear(AVLTREE_NODE_PTR node_ptr);
+    int get_height(AVLTREE_NODE_PTR node_ptr);
+    AVLTREE_NODE_PTR new_node(const KEY_TYPE& key, const VALUE_TYPE& value);
+    AVLTREE_NODE_PTR insert(AVLTREE_NODE_PTR cur_ptr, const KEY_TYPE &key, const VALUE_TYPE &value);
+    AVLTREE_NODE_PTR rotateL(AVLTREE_NODE_PTR cur_ptr);
+    AVLTREE_NODE_PTR rotateR(AVLTREE_NODE_PTR cur_ptr);
+    AVLTREE_NODE_PTR rotateRL(AVLTREE_NODE_PTR cur_ptr);
+    AVLTREE_NODE_PTR rotateLR(AVLTREE_NODE_PTR cur_ptr);
+    AVLTREE_NODE_PTR remove(AVLTREE_NODE_PTR cur_ptr, const KEY_TYPE &key);
 
-    avltree_node<KEY_TYPE, VALUE_TYPE>* root;
+    AVLTREE_NODE_PTR root_ptr;
+    int node_size;
 };
 
 template<class KEY_TYPE, class VALUE_TYPE>
 avltree<KEY_TYPE, VALUE_TYPE>::~avltree()
 {
-    destroy(root);
+    clear();
 }
 
 template<class KEY_TYPE, class VALUE_TYPE>
-void avltree<KEY_TYPE, VALUE_TYPE>::destroy(avltree_node<KEY_TYPE, VALUE_TYPE>* node)
+void avltree<KEY_TYPE, VALUE_TYPE>::clear()
 {
-    if (node == nullptr) return;
-    destroy(node->left);
-    destroy(node->right);
-    delete node;
+    clear(root_ptr);
 }
 
 template<class KEY_TYPE, class VALUE_TYPE>
-bool avltree<KEY_TYPE, VALUE_TYPE>::insert(const KEY_TYPE &key, const VALUE_TYPE &value)
+void avltree<KEY_TYPE, VALUE_TYPE>::clear(AVLTREE_NODE_PTR node_ptr)
 {
-    if (root == nullptr)
-    {
-        root = new avltree_node<KEY_TYPE, VALUE_TYPE>(key, value);
-        return true;
-    }
-    avltree_node<KEY_TYPE, VALUE_TYPE> *parent = nullptr, *cur = root;
-    while (cur != nullptr)
-    {
-        if (cur->key == key) return false;
-        else if (cur->key < key) {
-            parent = cur;
-            cur = cur->right;
-        } else {
-            parent = cur;
-            cur = cur->left;
-        }
-    }
-    cur = new avltree_node<KEY_TYPE, VALUE_TYPE>(key, value);
-    cur->parent = parent;
-    if (parent->key < key)
-    {
-        parent->right = cur;
-    } else {
-        parent->left = cur;
-    }
-    
-    while(parent != nullptr)
-    {
-        if (parent->left == cur)
+    if (node_ptr == nullptr) return;
+    clear(node_ptr->left_ptr);
+    clear(node_ptr->right_ptr);
+    delete node_ptr;
+}
+
+template<class KEY_TYPE, class VALUE_TYPE>
+AVLTREE_NODE_PTR avltree<KEY_TYPE, VALUE_TYPE>::new_node(const KEY_TYPE& key, const VALUE_TYPE &value)
+{
+    auto node = new AVLTREE_NODE(key, value);
+    return node;
+}
+
+template<class KEY_TYPE, class VALUE_TYPE>
+int avltree<KEY_TYPE, VALUE_TYPE>::get_height()
+{
+    return get_height(root_ptr);
+}
+
+template<class KEY_TYPE, class VALUE_TYPE>
+int avltree<KEY_TYPE, VALUE_TYPE>::get_height(AVLTREE_NODE_PTR node_ptr)
+{
+    if (node_ptr == NULL) return -1;
+    return node_ptr->height;
+}
+
+template<class KEY_TYPE, class VALUE_TYPE>
+void avltree<KEY_TYPE, VALUE_TYPE>::insert(const KEY_TYPE &key, const VALUE_TYPE &value)
+{
+    root_ptr = insert(root_ptr, key, value);
+    return;
+}
+
+template<class KEY_TYPE, class VALUE_TYPE>
+AVLTREE_NODE_PTR avltree<KEY_TYPE, VALUE_TYPE>::insert(AVLTREE_NODE_PTR cur_ptr, const KEY_TYPE &key, const VALUE_TYPE &value)
+{
+    if (cur_ptr == nullptr) {
+        cur_ptr = new_node(key, value);
+        ++node_size;
+
+    } else if (key < cur_ptr->key) {
+        cur_ptr->left_ptr = insert(cur_ptr->left_ptr, key, value);
+        if (get_height(cur_ptr->left_ptr) - get_height(cur_ptr->right_ptr) == 2)
         {
-            parent->balance--;
-        } else {
-            parent->balance++;
+            if (key < cur_ptr->left_ptr->key)
+                cur_ptr = rotateR(cur_ptr);
+            else 
+                cur_ptr = rotateLR(cur_ptr);
         }
 
-        if (parent->balance == 0) {
-            break;
-        } else if (parent->balance == 1 || parent->balance == -1) {
-            cur = parent;
-            parent = parent->parent;
-        } else {
-            if (parent->balance == 2)
-            {
-                if (cur->balance == 1) {
-                    rotateL(parent);
-                } else {
-                    rotateRL(parent);
-                }
-                
-            } else if (parent->balance == -2) {
-                if (cur->balance == -1) {
-                    rotateR(parent);
-                } else {
-                    rotateLR(parent);
-                }
-            }
-            break;
+    } else if (key > cur_ptr->key) {
+        cur_ptr->right_ptr = insert(cur_ptr->right_ptr, key, value);
+        if (get_height(cur_ptr->left_ptr) - get_height(cur_ptr->right_ptr) == -2)
+        {
+            if (key < cur_ptr->right_ptr->key)
+                cur_ptr = rotateRL(cur_ptr);
+            else
+                cur_ptr = rotateL(cur_ptr);
         }
+    } else {
+        cur_ptr->value = value;
     }
-    return true;
+    return cur_ptr;
 }
 
 template<class KEY_TYPE, class VALUE_TYPE>
-void avltree<KEY_TYPE, VALUE_TYPE>::rotateL(avltree_node<KEY_TYPE, VALUE_TYPE>* cur)
+AVLTREE_NODE_PTR avltree<KEY_TYPE, VALUE_TYPE>::rotateL(AVLTREE_NODE_PTR cur_ptr)
 {
-    auto parent = cur->parent;
-    auto subR = cur->right;
-    auto subRL = cur->right->left;
-    
-    cur->right = subRL;
-    if (subRL)
-    {
-        subRL->parent = cur;
-    }
+    auto subR_ptr = cur_ptr->right_ptr;
+    auto subRL_ptr = subR_ptr->left_ptr;
 
-    subR->left = cur;
-    cur->parent = subR;
-    
-    subR->parent = parent;
-    if (parent)
-    {
-        if (parent->left == cur) {
-            parent->left = subR;
-        } else {
-            parent->right = subR;
-        }
-    } else {
-        root = subR;
-    }
+    cur_ptr->right_ptr = subRL_ptr;
+    subR_ptr->left_ptr = cur_ptr;
 
-    cur->balance = 0;
-    subR->balance = 0;
+    cur_ptr->height = max(get_height(cur_ptr->left_ptr), get_height(cur_ptr->right_ptr)) + 1;
+    subR_ptr->height = max(get_height(subR_ptr->left_ptr), get_height(subR_ptr->right_ptr)) + 1;
+    return subR_ptr;
 }
+
 
 /* RL(D rotates to the right, then C rotates to the left):
          k3                         k3                          k2
@@ -142,60 +157,26 @@ void avltree<KEY_TYPE, VALUE_TYPE>::rotateL(avltree_node<KEY_TYPE, VALUE_TYPE>* 
         C    D                          D    B 
 */
 
-
 template<class KEY_TYPE, class VALUE_TYPE>
-void avltree<KEY_TYPE, VALUE_TYPE>::rotateRL(avltree_node<KEY_TYPE, VALUE_TYPE>* parent)
+AVLTREE_NODE_PTR avltree<KEY_TYPE, VALUE_TYPE>::rotateRL(AVLTREE_NODE_PTR cur_ptr)
 {
-    auto subR = parent->right;
-    auto subRL = subR->left;
-    auto balance = subRL->balance;
+    cur_ptr->right_ptr = rotateR(cur_ptr->right_ptr);
+    return rotateL(cur_ptr);
 
-    rotateR(subR);
-    rotateL(parent);
-
-    if (balance == 1)
-    {
-        parent->balance = -1;
-        subR->balance = 0;
-    } else if (balance == -1)
-    {
-        parent->balance = 0;
-        subR->balance = 1;
-    } else {
-        parent->balance = 0;
-        subR->balance = 0;
-    }
 }
 
 template<class KEY_TYPE, class VALUE_TYPE>
-void avltree<KEY_TYPE, VALUE_TYPE>::rotateR(avltree_node<KEY_TYPE, VALUE_TYPE>* cur)
+AVLTREE_NODE_PTR avltree<KEY_TYPE, VALUE_TYPE>::rotateR(AVLTREE_NODE_PTR cur_ptr)
 {
-    auto parent = cur->parent;
-    auto subL = cur->left;
-    auto subLR = subL->right;
-
-    cur->left = subLR;
-    if (subLR){
-        subLR->parent = cur;
-    }
-    subL->right = cur;
-    cur->parent = subL;
+    auto subL_ptr = cur_ptr->left_ptr;
+    auto subLR_ptr = subL_ptr->right_ptr;
     
-    subL->parent = parent;
+    cur_ptr->left_ptr = subLR_ptr;
+    subL_ptr->right_ptr = cur_ptr;
 
-    if (parent) {
-        if (parent->left == cur)
-        {
-            parent->left = subL;
-        } else {
-            parent->right = subL;
-        }
-    } else {
-        root = subL;
-    }
-
-    subL->balance = 0;
-    cur->balance = 0;
+    cur_ptr->height = max(get_height(cur_ptr->left_ptr), get_height(cur_ptr->right_ptr)) + 1;
+    subL_ptr->height = max(get_height(subL_ptr->left_ptr), get_height(subL_ptr->right_ptr)) + 1;
+    return subL_ptr;
 }
 
 /* LR(B rotates to the left, then C rotates to the right):
@@ -207,50 +188,44 @@ void avltree<KEY_TYPE, VALUE_TYPE>::rotateR(avltree_node<KEY_TYPE, VALUE_TYPE>* 
          /  \                  /  \
         B    C                A    B
 */
-template<class KEY_TYPE, class VALUE_TYPE>
-void avltree<KEY_TYPE, VALUE_TYPE>::rotateLR(avltree_node<KEY_TYPE, VALUE_TYPE>* cur)
-{
-    auto subL = cur->left;
-    auto subLR = subL->right;
-    int balance = subLR->balance;
-    
-    rotateL(subL);
-    rotateR(cur);
 
-    if (balance == 1)
-    {
-        subL->balance = -1;
-        cur->balance = 0;
-    } else if (balance == -1)
-    {
-        subL->balance = 0;
-        cur->balance = 1;
-    } else {
-        subL->balance = 0;
-        cur->balance = 0;
-    }
+template<class KEY_TYPE, class VALUE_TYPE>
+AVLTREE_NODE_PTR avltree<KEY_TYPE, VALUE_TYPE>::rotateLR(AVLTREE_NODE_PTR cur_ptr)
+{
+    cur_ptr->left_ptr = rotateL(cur_ptr->left_ptr);
+    return rotateR(cur_ptr);
 }
 
+template<class KEY_TYPE, class VALUE_TYPE>
+void avltree<KEY_TYPE, VALUE_TYPE>::remove(const KEY_TYPE& key)
+{
+    root_ptr = remove(root_ptr, key);
+}
+
+template<class KEY_TYPE, class VALUE_TYPE>
+AVLTREE_NODE_PTR avltree<KEY_TYPE, VALUE_TYPE>::remove(AVLTREE_NODE_PTR cur_ptr, const KEY_TYPE &key)
+{
+    return nullptr;
+}
 
 template<class KEY_TYPE, class VALUE_TYPE>
 bool check_avltree_balance(avltree<KEY_TYPE, VALUE_TYPE> &tree)
 {
-    int height = 0;
-    return check_avltree_balance(tree.get_root(), height);
+    return check_avltree_balance(tree.get_root());
 }
 
 template<class KEY_TYPE, class VALUE_TYPE>
-bool check_avltree_balance(avltree_node<KEY_TYPE, VALUE_TYPE>* root, int &height)
+int height(AVLTREE_NODE_PTR root_ptr)
 {
-    height = 0;
-    if (root == nullptr) return true;
-    int l = 0, r = 0;
-    if (!check_avltree_balance(root->left, l)) return false;
-    if (!check_avltree_balance(root->right, r)) return false;
-    if (r-l != root->balance) return false;
-    if (root->balance >= 2 || root->balance <= -2) return false;
-    height = 1+(l<r?r:l);
-    return true;
+    if (root_ptr == nullptr) return -1;
+    return root_ptr->height;
+}
+
+template<class KEY_TYPE, class VALUE_TYPE>
+bool check_avltree_balance(AVLTREE_NODE_PTR root_ptr)
+{
+    if (root_ptr == nullptr) return true;
+    return check_avltree_balance(root_ptr->left_ptr) && check_avltree_balance(root_ptr->right_ptr) && myabs(height(root_ptr->left_ptr) - height(root_ptr->right_ptr)) <= 1;
 }
 
 
