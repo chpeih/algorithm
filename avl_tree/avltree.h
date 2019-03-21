@@ -54,6 +54,7 @@ avltree<KEY_TYPE, VALUE_TYPE>::~avltree()
 template<class KEY_TYPE, class VALUE_TYPE>
 void avltree<KEY_TYPE, VALUE_TYPE>::clear()
 {
+    node_size = 0;
     clear(root_ptr);
 }
 
@@ -228,10 +229,11 @@ AVLTREE_NODE_PTR avltree<KEY_TYPE, VALUE_TYPE>::remove(AVLTREE_NODE_PTR cur_ptr,
     } else {
         temp = cur_ptr;
         if (cur_ptr->left_ptr == nullptr)
-          cur_ptr = cur_ptr->right_ptr;
-        else if (cur_ptr->right_ptr == nullptr)
-          cur_ptr = cur_ptr->left_ptr;
-        delete temp;
+            cur_ptr = cur_ptr->right_ptr; 
+        else if (cur_ptr->right_ptr == nullptr) 
+            cur_ptr = cur_ptr->left_ptr; 
+        delete temp; 
+        node_size--; 
     }
 
     if (cur_ptr == nullptr) return cur_ptr;
