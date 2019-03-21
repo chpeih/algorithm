@@ -123,6 +123,7 @@ AVLTREE_NODE_PTR avltree<KEY_TYPE, VALUE_TYPE>::insert(AVLTREE_NODE_PTR cur_ptr,
     } else {
         cur_ptr->value = value;
     }
+    cur_ptr->height = max(height(cur_ptr->left_ptr), height(cur_ptr->right_ptr)) + 1;
     return cur_ptr;
 }
 
@@ -242,15 +243,16 @@ AVLTREE_NODE_PTR avltree<KEY_TYPE, VALUE_TYPE>::remove(AVLTREE_NODE_PTR cur_ptr,
     cur_ptr->height = max(left_height, right_height) + 1;
 
     if (left_height - right_height == 2) {
-        if (height(cur_ptr->left_ptr->left_ptr) - height(cur_ptr->left_ptr->right_ptr) == 1)
-            return rotateR(cur_ptr);
-        else
+        if (height(cur_ptr->left_ptr->right_ptr) > height(cur_ptr->left_ptr->left_ptr))
             return rotateLR(cur_ptr);
-    } else if (right_height - left_height == 2) {
-        if (height(cur_ptr->right_ptr->right_ptr) - height(cur_ptr->right_ptr->left_ptr) == 1)
-          return rotateL(cur_ptr);
         else
-          return rotateRL(cur_ptr);
+            return rotateR(cur_ptr);
+
+    } else if (right_height - left_height == 2) {
+        if (height(cur_ptr->right_ptr->left_ptr) > height(cur_ptr->right_ptr->right_ptr))
+            return rotateRL(cur_ptr);
+        else
+            return rotateL(cur_ptr);
     }
     return cur_ptr;
 }

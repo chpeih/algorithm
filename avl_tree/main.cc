@@ -25,7 +25,7 @@ void test_set()
     {
         int k = a[i];
         tree.insert(k, k);
-        cout << "insert k " << k <<  " isBanlance: " << check_avltree_balance(tree) << endl;
+//        cout << "insert k " << k <<  " isBanlance: " << check_avltree_balance(tree) << endl;
     }
 
     for(int i = 0; i<sizeof(remove)/sizeof(int); i++)
@@ -41,7 +41,7 @@ void random_set()
 {
     stringstream inputsstr, removesstr;
     cout << "random_set ==================================== " << endl;
-    const int MAX_NODE = 50;
+    const int MAX_NODE = 500;
     srand(time(nullptr));
     auto tree = avltree<int, int>();
     vector<int> input;
@@ -54,8 +54,7 @@ void random_set()
         {
             cout << "error!!" << endl;
         }
-        cout << "insert k " << k <<  " isBanlance: " << check_avltree_balance(tree) << endl;
-        inputsstr << k <<  " , ";
+        cout << "insert k " << k <<  " isbanlance: " << check_avltree_balance(tree) << endl; inputsstr << k <<  " , "; 
     }
     cout << "tree.size() " << tree.size() << endl; 
     cout <<  inputsstr.str() << endl;
@@ -67,26 +66,33 @@ void random_set()
         removesstr << *it  << ", ";
         cout << removesstr.str() <<endl;
         tree.remove(*it);
-        cout << "remove " << *it << endl;
+        if (!check_avltree_balance(tree))
+        {
+            cout << "error!!" << endl;
+        }
+//        cout << "remove " << *it << endl;
     }
-    
     cout << "after delete tree.size() " << tree.size() << endl; 
 }
-
-
 
 void compare_stl_bst()
 {
     srand(time(nullptr));
     vector<int> input;
-    const int MAX_NODE = 1000000;
+    const int MAX_NODE = 3000000;
     for (int i = 0; i<MAX_NODE; i++) input.push_back(rand()%MAX_NODE);
     auto tree = avltree<int, int>();
     auto cur = currentMSTime();
     for(auto a: input)
     {
         tree.insert(a, a);
+//        if (!check_avltree_balance(tree))
+//        {
+//            cout << "insert error!!" << endl;
+//        }
+//        cout  << a  << ", ";
     }
+    cout << endl;
     cout << "avltree cost : " << currentMSTime() - cur << endl;
     cur = currentMSTime();
     map<int, int> b;
@@ -98,25 +104,30 @@ void compare_stl_bst()
     cout << "rbtree.size() " << b.size() << endl;
     cout << "tree.size() " << tree.size() << endl; 
 
-    for(int i = 0; i<1000; i++)
+    for(int i = 0; i<MAX_NODE/10; i++)
     {
         auto it = input.begin();
         advance(it, rand()%input.size());
         tree.remove(*it);
+//        cout << *it << ", ";
+//        if (!check_avltree_balance(tree))
+//        {
+//            cout <<endl << "error!!" << endl;
+//            break;
+//        }
         b.erase(*it);
     }
     cout << "rbtree.size() " << b.size() << endl;
     cout << "tree.size() " << tree.size() << endl; 
-  
-
-
 }
 
 
 int main()
 {
     test_set();
-//    random_set();
-//    compare_stl_bst();
+    for(int i = 0; i<100; i++)
+        random_set();
+    for(int i = 0; i<10; i++)
+        compare_stl_bst();
     return 0;
 }
