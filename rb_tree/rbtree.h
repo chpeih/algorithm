@@ -100,16 +100,39 @@ void rbtree<KEY_TYPE, VALUE_TYPE>::rbinsert_fixup(RBTREE_NODE_PTR cur_ptr)
     {
         if (PARENT_PTR(cur_ptr) == GRANDPARENT_PTR(cur_ptr)->left_ptr) {
             auto uncle_ptr = GRANDPARENT_PTR(cur_ptr)->right_ptr;   
-            if (uncle_ptr->color == RED)
-            {
+            if (uncle_ptr->color == RED) {
                 PARENT_PTR(cur_ptr)->color = BLACK;
                 uncle_ptr->color = BLACK;
                 GRANDPARENT_PTR(cur_ptr)->color = RED;
-            } else if (cur_ptr == PARENT_PTR(cur_ptr)->left);
-            
-
-        
+                cur_ptr = GRANDPARENT_PTR(cur_ptr);
+            } else {
+                if (cur_ptr == PARENT_PTR(cur_ptr)->right_ptr) {
+                    cur_ptr = PARENT_PTR(cur_ptr);
+                    rotateL(cur_ptr);
+                }
+                PARENT_PTR(cur_ptr)->color = BLACK;
+                GRANDPARENT_PTR(cur_ptr)->color = RED;
+                cur_ptr = GRANDPARENT_PTR(cur_ptr);
+                rotateR(cur_ptr);
+                break;
+            }
         } else {
+            auto uncle_ptr = GRANDPARENT_PTR(cur_ptr)->left_ptr;
+            if (uncle_ptr->color == RED) {
+                uncle_ptr->color = BLACK;
+                PARENT_PTR(cur_ptr)->color = BLACK;
+                cur_ptr = GRANDPARENT_PTR(cur_ptr);
+            } else {
+                if (cur_ptr == PARENT_PTR(cur_ptr)->left_ptr) {
+                    cur_ptr = PARENT_PTR(cur_ptr);
+                    rotateR(cur_ptr);
+                }
+                PARENT_PTR(cur_ptr)->color = BLACK;
+                GRANDPARENT_PTR(cur_ptr)->color = RED;
+                cur_ptr = GRANDPARENT_PTR(cur_ptr);
+                rotateL(cur_ptr);
+                break;
+            }
         }
 
 
