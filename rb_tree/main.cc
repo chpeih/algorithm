@@ -6,6 +6,7 @@
 #include <vector>
 #include <sys/time.h>
 #include <sstream>
+#include <fstream>
 using namespace std;
 
 static uint64_t currentMSTime()
@@ -58,28 +59,69 @@ void test_set()
 
 }
 
-void random_set()
+bool random_set()
 {
-    cout << "random_set ==================================== " << endl;
-    const int MAX_NODE = 500;
+    cout << "random_set insert ==================================== " << endl;
+    vector<int> input, remove;
+    const int MAX_NODE = 3000;
     srand(time(nullptr));
     auto tree = rbtree<int, int>();
     for(int i = 0; i<MAX_NODE; i++)
     {
         int k = rand()%MAX_NODE;
         tree.insert(k, k);
-//        cout << "insert k " << k << endl;
-        if (!checkBST(&tree)){
+        input.push_back(k);
+    }
+    auto write = [&]() {
+        cout << "write\n\n";
+        ofstream fout;
+        fout.open("random.dat");
+        for (auto i: input)
+            fout << i;
+        fout.close();
+
+        fout.open("remove.dat");
+        for (auto i:remove)
+            fout << i;
+        fout.close();
+    };
+
+    if (!checkBST(&tree)){
+        cout << "Invalid rbtree nor bst" << endl;
+        write();
+        return false;
+    }
+
+    if (!tree.check_valid())
+    {
+        write();
+        cout << "invalid rbtree nor rbtree" << endl;
+        return false;
+    }
+
+    cout << "random_set remove ==================================== " << endl;
+
+    for(int i = 0; i<MAX_NODE/10; i++)
+    {
+        auto it = input.begin();
+        advance(it, rand()%input.size());
+        tree.remove(*it);
+        remove.push_back(*it);
+        if (!checkBST(&tree) || !tree.check_valid())
+        {
             cout << "Invalid rbtree nor bst" << endl;
+            write();
+            return false;
         }
     }
+    return true;
 }
 
 void compare_stl_bst()
 {
     srand(time(nullptr));
     vector<int> input;
-    const int MAX_NODE = 30000;
+    const int MAX_NODE = 3000;
     for (int i = 0; i<MAX_NODE; i++) input.push_back(rand()%MAX_NODE);
     auto tree = rbtree<int, int>();
     auto cur = currentMSTime();
@@ -125,8 +167,11 @@ void compare_stl_bst()
 
 int main()
 {
-    test_set();
-    random_set();
-    compare_stl_bst();
+//    test_set();
+    for(int i = 0; i<100; i++)
+        if(!random_set())
+            break;
+//    for(int i = 0; i<30; i++)
+//        compare_stl_bst();
     return 0;
 }

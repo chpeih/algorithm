@@ -279,7 +279,7 @@ void rbtree<KEY_TYPE, VALUE_TYPE>::remove(const KEY_TYPE &key)
         parent_ptr->right_ptr = child;
     }
 
-    if (key_ptr->color == BLACK)
+    if (key_ptr->color == BLACK && !empty())
     {
         rbdelete_fixup(child);
     }
@@ -291,7 +291,6 @@ void rbtree<KEY_TYPE, VALUE_TYPE>::remove(const KEY_TYPE &key)
 template<class KEY_TYPE, class VALUE_TYPE>
 void rbtree<KEY_TYPE, VALUE_TYPE>::rbdelete_fixup(RBTREE_NODE_PTR cur_ptr)
 {
-    if (cur_ptr == nil && cur_ptr->parent_ptr == nil) return;
     while (cur_ptr != root_ptr && cur_ptr->color == BLACK)
     {
         if (cur_ptr == PARENT_PTR(cur_ptr)->left_ptr) {
