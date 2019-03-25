@@ -75,14 +75,12 @@ bool random_set()
     auto write = [&]() {
         cout << "write\n\n";
         ofstream fout;
-        fout.open("random.dat");
+        fout.open("test2.txt");
+        fout << (int)input.size() << " " << (int)remove.size() << endl;
         for (auto i: input)
-            fout << i;
-        fout.close();
-
-        fout.open("remove.dat");
+            fout << i << " ";
         for (auto i:remove)
-            fout << i;
+            fout << i << " ";
         fout.close();
     };
 
@@ -168,7 +166,7 @@ void compare_stl_bst()
 int main()
 {
 //    test_set();
-    for(int i = 0; i<100; i++)
+    for(int i = 0; i<100000; i++)
         if(!random_set())
             break;
 //    for(int i = 0; i<30; i++)

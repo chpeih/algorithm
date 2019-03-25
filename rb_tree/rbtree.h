@@ -324,7 +324,7 @@ void rbtree<KEY_TYPE, VALUE_TYPE>::rbdelete_fixup(RBTREE_NODE_PTR cur_ptr)
                 PARENT_PTR(cur_ptr)->color = RED;
                 rotateR(PARENT_PTR(cur_ptr));
             } else {
-                if (brother->left_ptr->color == BLACK & brother->left_ptr->color == BLACK)
+                if (brother->left_ptr->color == BLACK & brother->right_ptr->color == BLACK)
                 {
                     brother->color = RED;
                     cur_ptr = PARENT_PTR(cur_ptr);
@@ -378,6 +378,12 @@ bool rbtree<KEY_TYPE, VALUE_TYPE>::check_valid(RBTREE_NODE_PTR cur_ptr, int *hei
         cout << left << " " << right << endl;
         return false;
     }
+    auto parent_ptr = PARENT_PTR(cur_ptr);
+    if (parent_ptr != nil && parent_ptr->color == cur_ptr->color && cur_ptr->color == RED)
+        return false;
+    //if (PARENT_PTR(cur_ptr) != nil && (PARENT_PTR)->
+
+
     *height = left + (cur_ptr->color == BLACK?1:0);
     return true;
 }
