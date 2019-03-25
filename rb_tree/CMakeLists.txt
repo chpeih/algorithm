@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 
 project(rb_tree_unittest)
-
+add_definitions(-std=c++11)
 #set(BASIS_LIBS ${CMAKE_CURRENT_SOURCE_DIR}/../../basis_libs)
 #include(${BASIS_LIBS}/global.cmake)
 
